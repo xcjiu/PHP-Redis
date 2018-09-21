@@ -115,5 +115,19 @@ class Redis
         return false;
     }
 
+    /**
+     * 设置指定 key 的值，并返回 key 的旧值
+     * @param  [type]  $key    [description]
+     * @param  [type]  $value  [description]
+     * @param  integer $expire [description]
+     * @return [type]          [description]
+     */
+    public static function replace($key, $value, $expire=0)
+    {
+        $value = self::$redis->getSet($key, $value);
+        $expire = (int)$expire ? $expire : self::$expire;
+        self::$redis->expire($key, $expire);
+        return is_numeric($value) ? $value : unserialize($value);
+    }
 
 }
