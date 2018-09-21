@@ -36,7 +36,7 @@ class Index
 }
 ```
 ## 具体方法说明如下：（以下$redis变量表示Redis对象）
-- ### $redis::set($key, $value, $expire); 
+- ### $redis::set($key, $value, $expire=0); 
 
 ### 存储一个键值 （支持数组、对象）
 
