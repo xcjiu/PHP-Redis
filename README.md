@@ -37,7 +37,6 @@ class Index
 ```
 ## 具体方法说明如下：（以下$redis变量表示Redis对象）
 - ### $redis::set($key, $value, $expire=0); 
-
 ### 存储一个键值 （支持数组、对象）
 
 参数说明：（参数名，类型，[中文说明]）
@@ -50,8 +49,18 @@ $expire  int  [过期时间（秒），如果使用全局过期时间配置，�
 
 return  bool  [返回布尔值，成功true, 否则false]
 #
-- ### $redis::get($key);
+- ### $redis::expire($key, $expire=0);
+### 设置过期时间(秒)
 
+参数说明：（参数名，类型，[中文说明]）
+
+$key  string | int  [ 键名]
+
+$expire  int  [过期时间（秒），如果使用全局过期时间配置，可以不填]
+
+return  bool  [返回布尔值，成功true, 否则false]
+#
+- ### $redis::get($key);
 ### 获取一个键值
 
 参数说明：
@@ -98,6 +107,16 @@ $expire  int   [过期时间，如果不设置则用全局过期配置]
 
 return   mix  [返回旧值,如果旧值不存在则返回false,并新创建key的键值]
 #
+- ### $redis::mset($arr);
+
+### 同时设置一个或多个键值对。（支持键值为数组）
+
+参数说明：
+
+$arr array  [要设置的键值对数组]
+
+return  bool  [返回布尔值，成功true否则false]
+#
 - ### $redis::mget()
 
 ### 返回所有(一个或多个)给定 key 的值
@@ -108,7 +127,7 @@ return   mix  [返回旧值,如果旧值不存在则返回false,并新创建key�
 
 返回包含所有指定键值的数组，如果值不存在则返回false
 #
-- ### $redis::expireTime($key);
+- ### $redis::expiretime($key);
 ### 查询剩余过期时间（秒）
 
 参数说明：
@@ -130,6 +149,71 @@ $expire  int   [过期时间，如果不设置则用全局过期配置]
 
 return  bool  [设置成功返回true否则false]
 #
+- ### $redis::valuelen($key);
+### 返回字符串的长度，如果键值是数组则返回数组元素的个数
+
+参数说明：
+
+$key  string | int [键名]
+
+return  int  [返回长度值，如果键值不存在则返回0]
+#
+- ### $redis::inc($key, $int=0);
+### 将 key 中储存的数字值自增
+
+参数说明：
+
+$key  string | int [键名]
+
+$int  int [$int 自增量，如果不填则默认是自增量为 1]
+
+return  int | bool [返回自增后的值，如果键不存在则新创建值为0并返回自增后的数值.如果键值不是可转换的整数，则返回false]
+#
+-### $redis::dec($key, $int=0);
+### 将 key 中储存的数字值自增
+
+参数说明：
+
+$key  string | int [键名]
+
+$int  int [$int 自减量，如果不填则默认是自减量为 1]
+
+return  int | bool [返回自减后的值，如果键不存在则新创建值为0并返回自减后的数值.如果键值不是可转换的整数，则返回false]
+#
+- ### $redis::append($key, $value, $pos=false, $expire=0);
+### 为指定的 key 追加值(追加至末尾或开头位置，支持数组值追加)
+
+参数说明：
+
+$key  string | int [键名]
+
+$value  string | array   [要指定的键值]
+
+$pos  bool  [追加的位置，默认false为末尾，true为向开头位置追加]
+
+$expire  int   [过期时间，如果不设置则用全局过期配置]
+
+return  bool  [设置成功返回true否则false，向字符串值追加时加入的值必须为字符串类型。如果键不存在则创建新的键值对]
+#
+-### $redis::hset($table, $column, $value, $expire=0);
+### 为哈希表中的字段赋值 
+
+参数说明：
+
+$table  string  [哈希表名]
+
+$column  string  [字段名]
+
+$value  string | array  [字段值，如果传入的是数组则自动转换为json字符串]
+
+$expire  int  [过期时间，如果不填，默认0为不设置过期时间]
+
+return  如果成功返回 1，否则返回 0.当字段值已存在时也返回 0  
+#
+- ###
+
+
+
 
 
 
