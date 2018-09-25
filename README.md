@@ -84,6 +84,57 @@ $end  int   [截取长度，默认值0表示截取从起始位置到最后一个
 
 return   string  [返回字符串，如果键不存在或取值不是字符串类型则返回 false]
 #
+- ### $redis::replace($key, $value, $expire=0);
+
+### 设置指定 key 的值，并返回 key 的旧值（支持数组）
+
+参数说明：
+
+$key  string | int [键名]
+
+$value  mix   [要指定的键值]
+
+$expire  int   [过期时间，如果不设置则用全局过期配置]
+
+return   mix  [返回旧值,如果旧值不存在则返回false,并新创建key的键值]
+#
+- ### $redis::mget()
+
+### 返回所有(一个或多个)给定 key 的值
+
+参数说明：
+
+可传入一个或多个键名参数，键名字符串类型，如 $values = $redis::mget('one','two','three', ...);
+
+返回包含所有指定键值的数组，如果值不存在则返回false
+#
+- ### $redis::expireTime($key);
+### 查询剩余过期时间（秒）
+
+参数说明：
+
+$key string | int  [键名]
+
+return  int  [返回剩余的存活时间（秒），如果已过期则返回负数]
+#
+- ### $redis::setnx($key, $value, $expire=0);
+### 指定的 key 不存在时，为 key 设置指定的值(SET if Not eXists)
+
+参数说明：
+
+$key  string | int [键名]
+
+$value  mix   [要指定的键值]
+
+$expire  int   [过期时间，如果不设置则用全局过期配置]
+
+return  bool  [设置成功返回true否则false]
+#
+
+
+
+
+
 
 
 

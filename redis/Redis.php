@@ -117,10 +117,10 @@ class Redis
 
     /**
      * 设置指定 key 的值，并返回 key 的旧值
-     * @param  [type]  $key    [description]
-     * @param  [type]  $value  [description]
-     * @param  integer $expire [description]
-     * @return [type]          [description]
+     * @param  string or int  $key 键名
+     * @param  mix  $value 要指定的健值，支持数组
+     * @param  int $expire 过期时间，如果不填则用全局配置
+     * @return mix 返回旧值，如果旧值不存在则返回false,并新创建key的键值
      */
     public static function replace($key, $value, $expire=0)
     {
@@ -130,4 +130,59 @@ class Redis
         return is_numeric($value) ? $value : unserialize($value);
     }
 
+    /**
+     * 返回所有(一个或多个)给定 key 的值
+     * 可传入一个或多个键名参数，键名字符串类型，如 $values = $redis::mget('one','two','three', ...);
+     * @return 返回包含所有指定键值数组，如果不存在则返回false
+     */
+    public static function mget()
+    {
+        $keys = func_get_args();
+        if($keys){
+            $values = self::$redis->mget($keys);
+            if($values){
+                foreach ($values as &$value) {
+                    $value = is_numeric($value) ? $value : unserialize($value);
+                }
+                return $values;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 查询剩余过期时间（秒）
+     * @param  string or int $key  键名
+     * @return int 返回剩余的时间，如果已过期则返回负数
+     */
+    public static function expireTime($key) 
+    {
+        return self::$redis->ttl($key);
+    }
+
+    /**
+     * 指定的 key 不存在时，为 key 设置指定的值(SET if Not eXists)
+     * @param  string or int $key  键名
+     * @param  mix  $value 要指定的健值，支持数组
+     * @param  int $expire 过期时间，如果不填则用全局配置
+     * @return bool  设置成功返回true 否则false
+     */
+    public static function setnx($key, $value, $expire=0)
+    {
+        $value = is_int($value) ? $value : serialize($value);
+        $res = self::$redis->setnx($key, $value);
+        if($res){
+            $expire = (int)$expire ? $expire : self::$expire;
+            self::$redis->expire($key, $expire);
+        }
+        return $res;
+    }
+
+
+
+
+    public static function myself()
+    {
+        return self::$redis;
+    }
 }
