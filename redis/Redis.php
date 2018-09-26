@@ -306,7 +306,7 @@ class Redis
      * @param  string  $column 字段名
      * @param  string|array  $value  字段值
      * @param  int $expire 过期时间, 如果不填则不设置过期时间
-     * @return int  如果成功返回 1，否则返回 0.当字段值已存在时也返回 0  
+     * @return int  如果成功返回 1，否则返回 0.当字段值已存在时覆盖旧值并且返回 0  
      */
     public static function hset($table, $column, $value, $expire=0)
     {
@@ -318,9 +318,176 @@ class Redis
        return $res;
     }
 
+    /**
+     * 获取哈希表字段值
+     * @param  string $table  表名
+     * @param  string $column 字段名
+     * @return mix  返回字段值，如果字段值是数组保存的返回json格式字符串，转换成数组json_encode($value),如果字段不存在返回false;
+     */
     public static function hget($table, $column)
     {
         return self::$redis->hget($table, $column);
+    }
+
+    /**
+     * 删除哈希表 key 中的一个或多个指定字段，不存在的字段将被忽略
+     * @param  string $table  表名
+     * @param  string $column 字段名
+     * @return int  返回被成功删除字段的数量，不包括被忽略的字段,(删除哈希表用self::del($table))
+     */
+    public static function hdel($table, $columns)
+    {
+        $columns = func_get_args();
+        $table = $columns[0];
+        $count = count($columns);
+        $num = 0;
+        for ($i=1; $i < $count; $i++) { 
+            $num += self::$redis->hdel($table, $columns[$i]);
+        }
+        return $num;
+    }
+
+    /**
+     * 查看哈希表的指定字段是否存在
+     * @param  string $table  表名
+     * @param  string $column 字段名
+     * @return bool  存在返回true,否则false
+     */
+    public static function hexists($table, $column)
+    {
+        if((int)self::$redis->hexists($table, $column)){
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * 返回哈希表中，所有的字段和值
+     * @param  string $table 表名
+     * @return array   返回键值对数组
+     */
+    public static function hgetall($table)
+    {
+        return self::$redis->hgetall($table);
+    }
+
+    /**
+     * 为哈希表中的字段值加上指定增量值(支持整数和浮点数)
+     * @param  string $table  表名
+     * @param  string $column 字段名
+     * @param  int $num  增量值，默认1, 也可以是负数值,相当于对指定字段进行减法操作
+     * @return int|float|bool  返回计算后的字段值,如果字段值不是数字值则返回false,如果哈希表不存在或字段不存在返回false
+     */
+    public static function hinc($table, $column, $num=1)
+    {
+        $value = self::hget($table, $column);
+        if(is_numeric($value)){ //数字类型，包括整数和浮点数
+            $value += $num;
+            self::hset($table, $column, $value);
+            return $value;
+        }else{
+            return false;
+        }
+    }
+
+    /**
+     * 获取哈希表中的所有字段
+     * @param  string $table  表名
+     * @return array  返回包含所有字段的数组
+     */
+    public static function hkeys($table)
+    {
+        return self::$redis->hkeys($table);
+    }
+
+    /**
+     * 返回哈希表所有域(field)的值
+     * @param  string $table  表名
+     * @return array  返回包含所有字段值的数组,数字索引
+     */
+    public static function hvals($table)
+    {
+        return self::$redis->hvals($table);
+    }
+
+    /**
+     * 获取哈希表中字段的数量
+     * @param  string $table  表名
+     * @return int 如果哈希表不存在则返回0
+     */
+    public static function hlen($table)
+    {
+        return self::$redis->hlen($table);
+    }
+
+    /**
+     * 获取哈希表中，一个或多个给定字段的值
+     * @param  string $table  表名
+     * @param  string $columns 字段名
+     * @return array  返回键值对数组，如果字段不存在则字段值为null, 如果哈希表不存在返回空数组
+     */
+    public static function hmget($table, $columns)
+    {
+        $data = self::hgetall($table);
+        $result = [];
+        if($data){
+            $columns = func_get_args();
+            unset($columns[0]);
+            foreach ($columns as $value) {
+                $result[$value] = isset($data[$value]) ? $data[$value] : null;
+            }
+        }
+        return $result;
+    }
+
+    /**
+     * 同时将多个 field-value (字段-值)对设置到哈希表中
+     * @param  string $table  表名
+     * @param  array $data  要添加的键值对
+     * @param  int $expire  过期时间，不填则不设置过期时间
+     * @return bool 成功返回true,否则false
+     */
+    public static function hmset($table, array $data, $expire=0)
+    {
+        $result = self::$redis->hmset($table, $data);
+        if((int)$expire){
+            self::expire($table, $expire);  
+        }
+        return $result;
+    }
+
+    /**
+     * 为哈希表中不存在的的字段赋值
+     * @param  string  $table  哈希表名
+     * @param  string  $column 字段名
+     * @param  string|array  $value  字段值
+     * @param  int $expire 过期时间, 如果不填则不设置过期时间
+     * @return bool  如果成功返回true，否则返回 false.
+     */
+    public static function hsetnx($table, $column, $value, $expire=0)
+    {
+        if(is_array($value)){
+            $value = json_encode($value);
+        }
+        $result = self::$redis->hsetnx($table, $column, $value);
+        if((int)$expire){
+            self::expire($table, $expire);  
+        }
+        return $result;
+    }
+
+
+
+    // +--------------------------------------------------
+    // | 以上方法均为哈希表常用方法
+    // | 以下为列表处理方法
+    // +--------------------------------------------------
+
+
+
+    public static function ()
+    {
+
     }
 
 
