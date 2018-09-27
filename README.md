@@ -12,6 +12,12 @@ $config = [
     'timeout' => 10  // 连接超时时间（秒）。默认10
 ];
 
+/*不用配置所有的参数，只需要配置和默认配置不同的参数即可，如：
+$config = [
+    'password' => '123456',
+    'expire' => 7200
+];*/
+
 ```
 如果不需要更改默认参数值的话，不需要传入任何参数：$redis = new redis\Redis();
 
@@ -283,6 +289,7 @@ return int  返回被成功删除字段的数量，不包括被忽略的字段,(
 
 
 - ### $redis::hexists($table, $column);
+### 查看哈希表的指定字段是否存在
 
 参数说明：
 
@@ -397,6 +404,154 @@ $expire int [过期时间，默认值0或不填则不设置过期时间]
 
 return bool 成功返回true,否则false
 #
+
+
+- ### $redis::lpush($list, $value, $pop='first', $expire=0);
+### 将一个或多个值插入到列表头部（值可重复）或列表尾部。如果列表不存在，则创建新列表并插入值将一个或多个值插入到列表头部。如果列表不存在，则创建新列表并插入值
+
+参数说明：
+
+$list  string  [列表名]
+
+$value  string|array [要插入的值，如果要插入多个值请传入多个值的数组]
+
+$pop  string  [要插入的位置，默认first头部,last表示尾部]
+
+$expire int [过期时间，默认值0或不填则不设置过期时间]
+
+return int 返回列表的长度
+#
+
+
+- ### $redis::lindex($list, $index=0); 
+### 通过索引获取列表中的元素
+
+参数说明：
+
+$list  string  [列表名]
+
+$index  int 索引位置，从0开始计,默认0表示第一个元素，-1表示最后一个元素索引
+
+return string 返回指定索引位置的元素
+#
+
+
+- ### $redis::lset($list, $index, $value);
+### 通过索引来设置元素的值
+
+参数说明：
+
+$list  string  [列表名]
+
+$index  int [索引位置]
+
+$value  string  [要设置的值]
+
+return bool  成功返回true,否则false.当索引参数超出范围，或列表不存在返回false。
+#
+
+
+- ### $redis::lrange($list, $start=0, $end=-1);
+### 返回列表中指定区间内的元素
+
+参数说明：
+
+$list  string  [列表名]
+
+$start  int 起始位置，从0开始计,默认0
+
+$end int 结束位置，-1表示最后一个元素，默认-1
+
+return array 返回列表元素数组
+#
+
+
+- ### $redis::llen($list);
+### 返回列表的长度
+
+参数说明：
+
+$list  string  [列表名]
+
+return int 返回列表长度
+#
+
+
+- ### $redis::lpop($list, $pop='first');
+### 移出并获取列表的第一个元素或最后一个元素（默认第一个元素）
+
+参数说明：
+
+$list  string  [列表名]
+
+$pop string  [移出并获取的位置，默认first第一个元素，设为last则为最后一个元素]
+
+return string|bool 移出并返回列表第一个元素或最后一个元素,如果列表不存在则返回false
+#
+
+
+- ### $redis::lpoppush($list1, $list2);
+### 从列表1中弹出最后一个值，将弹出的元素插入到另外一个列表2开头并返回这个元素
+
+参数说明：
+
+$list1  string  [要弹出元素的列表名]
+
+$list2  string  [要接收元素的列表名]
+
+return string|bool 返回被弹出的元素,如果其中有一个列表不存在则返回false
+#
+
+
+- ### $redis::lisert($list, $element, $value, $pop='before');
+### 用于在指定的列表元素前或者后插入元素。如果元素有重复则选择第一个出现的位置。当指定元素不存在于列表中时，不执行任何操作
+
+参数说明：
+
+$list  string  [列表名]
+
+$element  string  [指定的元素]
+
+$value  string  [要插入的元素]
+
+return int 返回列表的长度。 如果没有找到指定元素 ，返回 -1 。 如果列表不存在或为空列表，返回 0 。
+#
+
+
+- ### $redis::lrem($list, $element, $count=0);
+### 移除列表中指定的元素
+
+参数说明：
+
+$list  string  [列表名]
+
+$element  string  [指定的元素]
+
+$count  int  [要删除的个数，0表示删除所有指定元素，负整数表示从表尾搜索, 默认0]
+
+return int 返回被移除元素的数量。 列表不存在时返回 0 
+#
+
+
+- ### $redis::ltrim($list, $start, $stop);
+### 让列表只保留指定区间内的元素，不在指定区间之内的元素都将被删除
+
+参数说明：
+
+$list  string  [列表名]
+
+$start  int  [起始位置，从0开始计]
+
+$stop  int  [结束位置，负数表示倒数第n个位置]
+
+return bool  成功返回true否则false
+#
+
+
+- ### 
+
+
+
 
 
 
