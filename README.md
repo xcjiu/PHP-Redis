@@ -211,8 +211,8 @@ return  int | bool [返回自增后的值，如果键不存在则新创建值为
 
 
 
--### $redis::dec($key, $int=0);
-### 将 key 中储存的数字值自增
+- ### $redis::dec($key, $int=0);
+### 将 key 中储存的数字值自减
 
 参数说明：
 
@@ -361,7 +361,7 @@ return int 返回字段数量，如果哈希表不存在则返回0
 #
 
 
--### $redis::hmget($table, $column1, $column2, ....);
+- ### $redis::hmget($table, $column1, $column2, ....);
 ### 获取哈希表中，一个或多个给定字段的值
 
 参数说明：
@@ -548,7 +548,194 @@ return bool  成功返回true否则false
 #
 
 
-- ### 
+- ### $redis::sadd($set, $member); 
+### 将一个或多个成员加入到集合中，已经存在于集合的元素将被忽略.如果集合不存在，则创建。（无序集合）
+
+参数说明：
+
+$set  string  [集合名称]
+
+$member  string|array   [要加入的值，如果要加入多个值请传入多个值的数组]
+
+return int  返回被添加元素的数量
+#
+
+
+- ### $redis::smembers($set);
+### 返回无序集合中的所有的成员
+
+参数说明：
+
+$set  string  [集合名称]
+
+return array  返回包含所有成员的数组
+#
+
+
+- ### $redis::scard($set);
+### 获取集合中元素的数量。
+
+参数说明：
+
+$set  string  [集合名称]
+
+return int  返回集合的成员数量
+#
+
+
+- ### $redis::spop($set);
+### 移除并返回集合中的一个随机元素
+
+参数说明：
+
+$set  string  [集合名称]
+
+return string|bool  返回移除的元素,如果集合为空则返回false
+#
+
+
+- ### $redis::srem($set, $member);
+### 移除集合中的一个或多个成员元素，不存在的成员元素会被忽略
+
+参数说明：
+
+$set  string  [集合名称]
+
+$member  string|array   [要移除的元素，如果要移除多个元素请传入多个元素的数组]
+
+return int  返回被移除元素的个数
+#
+
+
+- ### $redis::srand($set, $count=0);
+### 返回集合中的一个或多个随机元素
+
+参数说明：
+
+$set  string  [集合名称]
+
+$count   int   [要返回的元素个数，0表示返回单个元素，大于等于集合基数则返回整个元素数组。默认0]
+
+return string|array  [返回随机元素，如果是返回多个则为数组返回]
+#
+
+
+- ### $redis::sdiff($set1, $set2);
+### 返回给定集合之间的差集(集合1相对于集合2的差集)。不存在的集合将视为空集
+
+参数说明：
+
+$set1  string  [集合1名称]
+
+$set2  string  [集合2名称]
+
+return array 返回差集数组（即筛选存在集合1中但不存在于集合2中的元素）
+#
+
+
+- ### $redis::sdiffstore($set, $set1, $set2);
+### 将给定集合set1和set2之间的差集存储在指定的set集合中。如果指定的集合已存在，则会被覆盖。
+
+参数说明：
+
+$set  string  [指定存储的集合]
+
+$set1  string  [集合1]
+
+$set2  string  [集合2]
+
+return  int  返回指定存储集合元素的数量
+#
+
+
+- ### $redis::sinter($set1, $set2);
+### 返回set1集合和set2集合的交集（即筛选同时存在集合1和集合2中的元素）
+
+参数说明：
+
+$set1  string  [集合1]
+
+$set2  string  [集合2]
+
+return  array  返回包含交集元素的数组
+#
+
+
+- ### $redis::sinterstore($set, $set1, $set2);
+### 将给定集合set1和set2之间的交集存储在指定的set集合中。如果指定的集合已存在，则会被覆盖。
+
+参数说明：
+
+$set  string  [指定存储的集合]
+
+$set1  string  [集合1]
+
+$set2  string  [集合2]
+
+return  int  返回指定存储集合元素的数量
+#
+
+
+- ### $redis::sismember($set, $member);
+### 判断成员元素是否是集合的成员
+
+参数说明：
+
+$set  string  [集合名称]
+
+$member  string  [要判断的元素]
+
+return  bool  如果成员元素是集合的成员返回true,否则false
+#
+
+
+- ### $redis::remove($set1, $set2, $member);
+### 将元素从集合1中移动到集合2中
+
+参数说明：
+
+$set1  string  [集合1]
+
+$set2  string  [集合2]
+
+$member  string  [要移动的元素]
+
+return  bool  成功返回true,否则false
+#
+
+
+- ### $redis::sunion($set1, $set2);
+### 返回集合1和集合2的并集(即两个集合合并后去重的结果)。不存在的集合被视为空集。
+
+参数说明：
+
+$set1  string  [集合1]
+
+$set2  string  [集合2]
+
+return  array  返回并集数组
+#
+
+
+- ### $redis::sunionstore($set, $set1, $set2);
+### 将给定集合set1和set2之间的交集存储在指定的set集合中。如果指定的集合已存在，则会被覆盖。
+
+参数说明：
+
+$set  string  [指定存储的集合]
+
+$set1  string  [集合1]
+
+$set2  string  [集合2]
+
+return  int  返回指定存储集合元素的数量
+#
+
+
+
+
+
+
 
 
 

@@ -619,6 +619,208 @@ class Redis
 
 
 
+    // +--------------------------------------------------
+    // | 以上方法均为列表常用方法
+    // | 以下为集合处理方法(集合分为有序和无序集合)
+    // +--------------------------------------------------
+    
+
+
+    /**
+     * 将一个或多个元素加入到无序集合中，已经存在于集合的元素将被忽略.如果集合不存在，则创建一个只包含添加的元素作成员的集合。
+     * @param  string $set  集合名称
+     * @param  string|array $value 元素值（唯一）,如果要加入多个元素请传入多个元素的数组
+     * @return int  返回被添加元素的数量.如果$set不是集合类型时返回0
+     */
+    public static function sadd($set, $value)
+    {
+        $num = 0;
+        if(is_array($value)){
+            foreach ($value as $key =>$v) {
+                $num += self::$redis->sadd($set, $v);
+            }
+        }else{
+            $num += self::$redis->sadd($set, $value);
+        }
+        return $num;
+    }
+
+    /**
+     * 返回无序集合中的所有的成员
+     * @param  string $set 集合名称
+     * @return  array  返回包含所有成员的数组
+     */
+    public static function smembers($set)
+    {
+        return self::$redis->smembers($set);
+    }
+
+    /**
+     * 获取集合中元素的数量。
+     * @param  string $set 集合名称
+     * @return int  返回集合的成员数量
+     */
+    public static function scard($set)
+    {
+        return self::$redis->scard($set);
+    }
+
+    /**
+     * 移除并返回集合中的一个随机元素
+     * @param  string $set 集合名称
+     * @return string|bool  返回移除的元素,如果集合为空则返回false
+     */
+    public static function spop($set)
+    {
+        return self::$redis->spop($set);
+    }
+
+    /**
+     * 移除集合中的一个或多个成员元素，不存在的成员元素会被忽略
+     * @param  string $set 集合名称
+     * @param  string|array $member 要移除的元素，如果要移除多个请传入多个元素的数组
+     * @return int  返回被移除元素的个数
+     */
+    public static function srem($set, $member)
+    {
+        $num = 0;
+        if(is_array($member)){
+            foreach ($member as $value) {
+                $num += self::$redis->srem($set, $value);
+            }
+        }else{
+            $num += self::$redis->srem($set, $member);
+        }
+        return $num;
+    }
+
+    /**
+     * 返回集合中的一个或多个随机元素
+     * @param  string $set   集合名称
+     * @param  int $count 要返回的元素个数，0表示返回单个元素，大于等于集合基数则返回整个元素数组。默认0
+     * @return string|array   返回随机元素，如果是返回多个则为数组返回
+     */
+    public static function srand($set, $count=0)
+    {
+        return ((int)$count==0) ? self::$redis->srandmember($set) : self::$redis->srandmember($set, $count);
+    }
+
+    /**
+     * 返回给定集合之间的差集(集合1对于集合2的差集)。不存在的集合将视为空集
+     * @param  string $set1 集合1名称
+     * @param  string $set2 集合2名称
+     * @return array  返回差集（即筛选存在集合1中但不存在于集合2中的元素）
+     */
+    public static function sdiff($set1, $set2)
+    {
+        return self::$redis->sdiff($set1, $set2);
+    }
+
+    /**
+     * 将给定集合set1和set2之间的差集存储在指定的set集合中。如果指定的集合已存在，则会被覆盖。
+     * @param  string $set  指定存储的集合
+     * @param  string $set1 集合1
+     * @param  string $set2 集合2
+     * @return int  返回指定存储集合元素的数量
+     */
+    public static function sdiffstore($set, $set1, $set2)
+    {
+        return self::$redis->sdiffstore($set, $set1, $set2);
+    }
+
+    /**
+     * 返回set1集合和set2集合的交集（即筛选同时存在集合1和集合2中的元素）
+     * @param  string $set1 集合1
+     * @param  string $set2 集合2
+     * @return array  返回包含交集元素的数组
+     */
+    public static function sinter($set1, $set2)
+    {
+        return self::$redis->sinter($set1, $set2);
+    }
+
+    /**
+     * 将给定集合set1和set2之间的交集存储在指定的set集合中。如果指定的集合已存在，则会被覆盖。
+     * @param  string $set  指定存储的集合
+     * @param  string $set1 集合1
+     * @param  string $set2 集合2
+     * @return int  返回指定存储集合元素的数量
+     */
+    public static function sinterstore($set, $set1, $set2)
+    {
+        return self::$redis->sinterstore($set, $set1, $set2);
+    }
+
+    /**
+     * 判断成员元素是否是集合的成员
+     * @param  string $set   集合名称
+     * @param  string $member 要判断的元素
+     * @return bool 如果成员元素是集合的成员返回true,否则false
+     */
+    public static function sismember($set, $member)
+    {
+        return self::$redis->sismember($set, $member);
+    }
+
+    /**
+     * 将元素从集合1中移动到集合2中
+     * @param  string $set1 集合1
+     * @param  string $set2 集合2
+     * @param  string $member 要移动的元素成员
+     * @return bool  成功返回true,否则false
+     */
+    public static function smove($set1, $set2, $member)
+    {
+        return self::$redis->smove($set1, $set2, $member);
+    }
+
+    /**
+     * 返回集合1和集合2的并集(即两个集合合并后去重的结果)。不存在的集合被视为空集。
+     * @param  string $set1 集合1
+     * @param  string $set2 集合2
+     * @return array  返回并集数组
+     */
+    public static function sunion($set1, $set2)
+    {
+        return self::$redis->sunion($set1, $set2);
+    }
+
+    /**
+     * 将给定集合set1和set2之间的并集存储在指定的set集合中。如果指定的集合已存在，则会被覆盖。
+     * @param  string $set  指定存储的集合
+     * @param  string $set1 集合1
+     * @param  string $set2 集合2
+     * @return int  返回指定存储集合元素的数量
+     */
+    public static function sunionstore($set, $set1, $set2)
+    {
+        return self::$redis->sunionstore($set, $set1, $set2);
+    }
+
+
+    /* ----------------------以下有序集合----------------------- */
+
+    /**
+     * 将一个或多个成员元素及其分数值加入到有序集当中，如果成员已存在则更新它的分数值，如果集合不存在则创建
+     * @param  string $set    集合名称
+     * @param  numeric $digit  分数值（分数值可以是整数值或双精度浮点数）
+     * @param  string $member 元素（唯一）
+     * @return int  返回添加成功的成员数量
+     */
+    public static function zadd($set, $digit, $member)
+    {
+        return self::$redis->zadd($set, $digit, $member);
+    }
+
+
+    public static function zrange($set, $start=0, $stop=-1, $with='WITHSCORES')
+    {
+        return self::$redis->zrange($set, $start, $stop, $with);
+    }
+    
+
+
+
 
 
     public static function myself()
