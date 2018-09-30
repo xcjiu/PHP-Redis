@@ -38,7 +38,7 @@ class Index
         Redis::set('key', 'value', 7200);
         $res = Redis::get('key');
         ........
-        
+
         /*---------------支持事务-----------*/
         //开启事务：$redis::transation();
 
@@ -54,7 +54,7 @@ class Index
 }
 ```
 ## 具体方法说明如下：（以下$redis变量表示Redis对象）如果想使用原生的方法也可以，如：$redis::myself()->set($key, $value);
--### $redis::selectdb($db);
+- ### $redis::selectdb($db);
 ### 切换到指定的数据库, 数据库索引号用数字值指定
 
 参数说明：
@@ -946,7 +946,6 @@ return float|bool   返回分数值(浮点型)，如果成员不存在返回fals
 #
 
 
-- ### 
 
 
 
