@@ -41,16 +41,16 @@ class Index
 
         /*---------------支持事务-----------*/
         //开启事务：
-        $redis::transation();
+        Redis::transation();
 
         //执行队列
-        $redis::set($key, $value);
-        $redis::hset($table,$column,$value);
+        Redis::set($key, $value);
+        Redis::hset($table,$column,$value);
         ......
 
         //提交事务
-        $redis::commit();
-        //取消事务 $redis::discard();
+        Redis::commit();
+        //取消事务 Redis::discard();
     }
 }
 ```
