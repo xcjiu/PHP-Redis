@@ -40,7 +40,8 @@ class Index
         ........
 
         /*---------------支持事务-----------*/
-        //开启事务：$redis::transation();
+        //开启事务：
+        $redis::transation();
 
         //执行队列
         $redis::set($key, $value);
