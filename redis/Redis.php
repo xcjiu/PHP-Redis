@@ -15,7 +15,7 @@ class Redis
     private static $host = '127.0.0.1';
     private static $port = '6379';
     private static $password = '';
-    private static $db = '';
+    private static $db = 0;
     private static $timeout = 10;
     /**
      * 初始化Redis连接
@@ -33,7 +33,7 @@ class Redis
         if(!empty(self::$password)){
             self::$redis->auth(self::$password); //如果有设置密码，则需要连接密码
         }
-        if(!empty(self::$db)){
+        if((int)self::$db){
             self::$redis->select(self::$db); //选择缓存库
         }
     }
@@ -50,6 +50,25 @@ class Redis
         self::$db = isset($config['db']) ? $config['db'] : ''; 
         self::$expire = isset($config['expire']) ? $config['expire'] : 3600; 
         self::$timeout = isset($config['timeout']) ? $config['timeout'] : 10; 
+    }
+
+    /**
+     * 切换到指定的数据库, 数据库索引号用数字值指定
+     * @param  int $db 存储库
+     * @return 
+     */
+    public static function selectdb($db)
+    {
+        self::$redis->select((int)$db);
+    }
+
+    /**
+     * 创建当前数据库的备份(该命令将在 redis 安装目录中创建dump.rdb文件)
+     * @return bool 成功true否则false (如果需要恢复数据，只需将备份文件 (dump.rdb) 移动到 redis 安装目录并启动服务即可)
+     */
+    public static function savedb()
+    {
+        return self::$redis->save();
     }
 
     /**
@@ -98,6 +117,9 @@ class Redis
     public static function get($key)
     {
         $value = self::$redis->get($key);
+        if(is_object($value)){
+            return $value;
+        }
         return is_numeric($value) ? $value : unserialize($value);
     }
 
@@ -803,20 +825,205 @@ class Redis
     /**
      * 将一个或多个成员元素及其分数值加入到有序集当中，如果成员已存在则更新它的分数值，如果集合不存在则创建
      * @param  string $set    集合名称
-     * @param  numeric $digit  分数值（分数值可以是整数值或双精度浮点数）
-     * @param  string $member 元素（唯一）
+     * @param  array $arr  元素（唯一）与其分数值（分数值可以是整数值或双精度浮点数）组成的数组
      * @return int  返回添加成功的成员数量
      */
-    public static function zadd($set, $digit, $member)
+    public static function zadd($set, $arr)
     {
-        return self::$redis->zadd($set, $digit, $member);
+        $num = 0;
+        if($arr && is_array($arr)){
+            foreach ($arr as $key => $value) {
+                if(is_numeric($value)){
+                    $num += self::$redis->zadd($set, $value, $key);
+                }
+            }
+        }
+        return $num;
+    }
+
+    /**
+     * 返回有序集中，指定区间内的成员。默认返回所有成员(默认升序排列)
+     * @param  string  $set   集合名称
+     * @param  int  $start 起始位置，从0开始计，默认0
+     * @param  int $stop  结束位置，-1表示最后一位，默认-1
+     * @param  bool $desc 排序，false默认升序，true为倒序
+     * @return array  返回有序集合中指定区间内的成员数组（默认返回所有）
+     */
+    public static function zrange($set, $start=0, $stop=-1, $desc=false)
+    {
+        if($desc===true){
+            return self::$redis->ZREVRANGE($set, $start, $stop, 'WITHSCORES');
+        }
+        return self::$redis->zrange($set, $start, $stop, 'WITHSCORES');
+    }
+
+    /**
+     * 返回有序集合中成员数量
+     * @param  string $set 集合名称
+     * @return int  返回成员的数量
+     */
+    public static function zcard($set)
+    {
+        return self::$redis->zcard($set);
+    }
+
+    /**
+     * 计算有序集合中指定分数区间的成员数量
+     * @param  string $set 集合名称
+     * @param  int|float $min 最小分数值
+     * @param  int|float $max 最大分数值
+     * @return int  返回指定区间的成员数量
+     */
+    public static function zcount($set, $min, $max)
+    {
+        return self::$redis->zcount($set, $min, $max);
+    }
+
+    /**
+     * 对有序集合中指定成员的分数加上增量
+     * @param  string $set 集合名称
+     * @param  string  $member 指定元素
+     * @param  int $num   增量值，负数表示进行减法运算，默认1
+     * @return float  返回运算后的分数值（浮点型）
+     */
+    public static function zinc($set, $member, $num=1)
+    {
+        return self::$redis->zincrby($set, $num, $member);
+    }
+
+    /**
+     * 计算set1和set2有序集的交集，并将该交集(结果集)储存到新集合set中。
+     * @param  string $set  指定存储的集合名称
+     * @param  string $set1 集合1
+     * @param  string $set2 集合2
+     * @return int  返回保存到目标结果集的的成员数量
+     */
+    public static function zinterstore($set, $set1, $set2)
+    {
+        return self::$redis->zinterstore($set, 2, $set1, $set2);
     }
 
 
-    public static function zrange($set, $start=0, $stop=-1, $with='WITHSCORES')
+    /**
+     * 计算set1和set2有序集的并集，并将该并集(结果集)储存到新集合set中。
+     * @param  string $set  指定存储的集合名称
+     * @param  string $set1 集合1
+     * @param  string $set2 集合2
+     * @return int  返回保存到目标结果集的的成员数量
+     */
+    public static function zunionstore($set, $set1, $set2)
     {
-        return self::$redis->zrange($set, $start, $stop, $with);
+        return self::$redis->zunionstore($set, 2, $set1, $set2);
     }
+
+    /**
+     * 返回有序集合中指定分数区间的成员列表。有序集成员按分数值递增(从小到大)次序排列
+     * @param  string $set   集合名称
+     * @param  string $min  最小分数值字符串表示，'1'表示>=1，(1'表示>1
+     * @param  string $max  最大分数值字符串表示,'100'表示<=1，(100'表示<100
+     * @param  bool $withscores  返回的数组是否包含分数值，默认true, false不包含
+     * @return array   返回指定区间的成员，默认是元素=>分数值的键值对数组。如果只要返回包含元素的数组请设置$withscores=false
+     */
+    public static function zrangebyscore($set, $min, $max, $withscores=true)
+    {
+        if($withscores===true){
+            return self::$redis->zrangebyscore($set, $min, $max, ['withscores'=>'-inf']);
+        }
+        return self::$redis->zrangebyscore($set, $min, $max);
+    }
+
+    /**
+     * 返回有序集中指定成员的排名。其中有序集成员按分数值递增(从小到大)顺序排列。
+     * @param  string $set    集合名称
+     * @param  string $member 成员名称（元素）
+     * @return int|bool   返回 member 的排名, 如果member不存在返回false
+     */
+    public static function zrank($set, $member)
+    {
+        return self::$redis->zrank($set, $member);
+    }
+
+    /**
+     * 移除有序集中的一个或多个成员，不存在的成员将被忽略。
+     * @param  string $set     有序集合名称
+     * @param  string|array $members 要移除的成员，如果要移除多个请传入多个成员的数组
+     * @return int   返回被移除的成员数量，不存在的成员将被忽略
+     */
+    public static function zrem($set, $members)
+    {
+        $num = 0;
+        if(is_array($members)){
+            foreach ($members as $value) {
+                $num += self::$redis->zrem($set, $value);
+            }
+        }else{
+            $num += self::$redis->zrem($set, $members);
+        }
+        return $num;
+    }
+
+    /**
+     * 移除有序集中，指定分数（score）区间内的所有成员。
+     * @param  string $set   集合名称
+     * @param  int $min 最小分数值
+     * @param  int $max 最大分数值
+     * @return int  返回被移除的成员数量
+     */
+    public static function zrembyscore($set, $min, $max)
+    {
+        return self::$redis->zremrangebyscore($set, $min, $max);
+    }
+
+    /**
+     * 移除有序集中，指定排名(rank)区间内的所有成员（这个排名数字越大排名越高，最低排名0开始）
+     * @param  string $set   集合名称
+     * @param  int $min 最小排名，从0开始计
+     * @param  int $max 最大排名
+     * @return int  返回被移除的成员数量，如移除排名为倒数5名的成员：$redis::zremrank($set,0,4);
+     */
+    public static function zrembyrank($set, $min, $max)
+    {
+        return self::$redis->zremrangebyrank($set, $min, $max);
+    }
+
+    /**
+     * 返回有序集中，成员的分数值。
+     * @param  string $set    集合名称
+     * @param  string $member 成员
+     * @return float|bool   返回分数值(浮点型)，如果成员不存在返回false
+     */
+    public static function zscore($set, $member)
+    {
+        return self::$redis->zscore($set, $member);
+    }
+
+    /**
+     * 开启事务
+     */
+    public static function transation()
+    {
+        self::$redis->multi();
+    }
+
+    /**
+     * 提交事务
+     */
+    public static function commit()
+    {
+        self::$redis->exec();
+    }
+
+    /**
+     * 取消事务
+     */
+    public static function discard()
+    {
+        self::$redis->discard();
+    }
+
+
+
+
     
 
 

@@ -1,6 +1,6 @@
 # PHP-Redis 扩展应用类 
 **（开始在 PHP 中使用 Redis 前， 请确保已经安装了 redis 服务及 PHP redis 驱动）**
-### 这是一个Redis应用类，所有方法均使用静态调用
+### 这是一个Redis应用类，所有方法均使用静态调用（包含字符串方法，哈希表，列表，集合，有序集合常用方法封装）
 #### 实例化类配置参数说明：$redis = new redis\Redis($config);
 ```
 $config = [
@@ -8,7 +8,7 @@ $config = [
     'port' => '6379',  //端口号。默认='6379'
     'expire' => 3600,  // 默认全局过期时间，单位秒。不填默认3600
     'password' => '',  // 连接密码，如果有设置密码的话
-    'db' => '',   //缓存库选择。默认0
+    'db' => 0,   //缓存库选择。默认0
     'timeout' => 10  // 连接超时时间（秒）。默认10
 ];
 
@@ -38,10 +38,37 @@ class Index
         Redis::set('key', 'value', 7200);
         $res = Redis::get('key');
         ........
+        
+        /*---------------支持事务-----------*/
+        //开启事务：$redis::transation();
+
+        //执行队列
+        $redis::set($key, $value);
+        $redis::hset($table,$column,$value);
+        ......
+
+        //提交事务
+        $redis::commit();
+        //取消事务 $redis::discard();
     }
 }
 ```
-## 具体方法说明如下：（以下$redis变量表示Redis对象）
+## 具体方法说明如下：（以下$redis变量表示Redis对象）如果想使用原生的方法也可以，如：$redis::myself()->set($key, $value);
+-### $redis::selectdb($db);
+### 切换到指定的数据库, 数据库索引号用数字值指定
+
+参数说明：
+
+$db int  [指定的库]
+#
+
+
+- ### $redis::savedb();
+### 创建当前数据库的备份(该命令将在 redis 安装目录中创建dump.rdb文件)
+return bool 成功true否则false (如果需要恢复数据，只需将备份文件 (dump.rdb) 移动到 redis 安装目录并启动服务即可)
+#
+
+
 - ### $redis::set($key, $value, $expire=0); 
 ### 存储一个键值 （支持数组、对象）
 
@@ -730,6 +757,198 @@ $set2  string  [集合2]
 
 return  int  返回指定存储集合元素的数量
 #
+
+
+- ### $redis::zadd($set, $arr);
+### 将一个或多个成员元素及其分数值加入到有序集当中，如果成员已存在则更新它的分数值，如果集合不存在则创建
+
+参数说明：
+
+$set  string  [集合名称]
+
+$arr  array   [成员元素与其分数值的键值对数组(键是唯一的)，如 $arr=['one'=>2.5]]
+
+return int  返回添加成功的成员数量
+#
+
+
+- ### $redis::zrange($set, $start=0, $stop=-1, $desc=false);
+### 返回有序集中，指定区间内的成员。默认返回所有成员(默认升序排列)
+
+参数说明：
+
+$set  string  [集合名称]
+
+$start  int   [起始位置，从0开始计，默认0]
+
+$stop  int  [结束位置，-1表示最后一位，默认-1]
+
+$desc  bool  [false默认升序排序，true为倒序]
+
+return array  返回有序集合中指定区间内的成员数组（默认返回所有）
+#
+
+
+- ### $redis::acard($set);
+### 返回有序集合中成员数量
+
+参数说明：
+
+$set  string  [集合名称]
+
+return int  [返回有序集合的成员数量]
+#
+
+
+- ### $redis::zcount($set, $min, $max);
+### 计算有序集合中指定分数区间的成员数量
+
+参数说明：
+
+$set  string  [集合名称]
+
+$min   int|float  [最小分数值]
+
+$max   int|float  [最大分数值]
+
+return int  返回指定区间的成员数量
+#
+
+
+- ### $redis::zinc($set, $member, $num=1);
+### 对有序集合中指定成员的分数加上增量
+
+参数说明：
+
+$set  string  [集合名称]
+
+$member  string  [指定的元素]
+
+$num  int|float  [增量，负数值表示减法运算]
+
+return  float 返回运算后的分数值（浮点型）
+#
+
+
+- ### $redis::zinterstore($set, $set1, $set2);
+### 计算set1和set2有序集的交集，并将该交集(结果集)储存到新集合set中。
+
+参数说明：
+
+$set  string  [要存储的集合名称]
+
+$set1  string  [集合1]
+
+$set2  string  [集合2]
+
+return int  返回保存到目标结果集的成员数量
+#
+
+
+- ### $redis::zunionstore($set, $set1, $set2);
+### 计算set1和set2有序集的并集，并将该并集(结果集)储存到新集合set中。
+
+参数说明：
+
+$set  string  [要存储的集合名称]
+
+$set1  string  [集合1]
+
+$set2  string  [集合2]
+
+return int  返回保存到目标结果集的成员数量
+#
+
+
+- ### $redis::zrangebyscore($set, $min, $max, $withscores=true);
+### 返回有序集合中指定分数区间的成员列表。有序集成员按分数值递增(从小到大)次序排列
+
+参数说明：
+
+$set  string  [集合名称]
+
+$min   string  [最小分数值字符串表示，如：'1'表示>=1，'(1'表示>1]
+
+$max   string  [最大分数值字符串表示,如：'100'表示<=1，'(100'表示<100]
+
+$withscores  bool  返回的数组是否包含分数值，默认true, false不包含
+
+return array   返回指定区间的成员，默认是元素=>分数值的键值对数组。如果只要返回包含元素的数组请设置$withscores=false
+#
+
+
+- ### $redis::zrank($set, $member);
+### 返回有序集中指定成员的排名。其中有序集成员按分数值递增(从小到大)顺序排列
+
+参数说明：
+
+$set  string  [集合名称]
+
+$member  string  [要排名的成员]
+
+return int|bool  返回 member 的排名, 如果member不存在返回false
+#
+
+
+- ### $redis::zrem($set, $members);
+### 移除有序集中的一个或多个成员，不存在的成员将被忽略
+
+参数说明：
+
+$set  string  [集合名称]
+
+$members  string|array  [要移除的成员，如果要移除多个请传入多个成员的数组]
+
+return int  返回被移除的成员数量，不存在的成员将被忽略
+#
+
+
+- ### $redis::zrembyscore($set, $min, $max);
+### 移除有序集中，指定分数（score）区间内的所有成员。
+
+参数说明：
+
+$set  string  [集合名称]
+
+$min   int|float  [最小分数值]
+
+$max   int|float  [最大分数值]
+
+return int  返回被移除的成员数量
+#
+
+
+- ### $redis::zrembyrank($set, $min, $max);
+### 移除有序集中，指定排名(rank)区间内的所有成员（这个排名数字越大排名越高，最低排名0开始）
+
+参数说明：
+
+$set  string  [集合名称]
+
+$min   int  [最小排名，从0开始计]
+
+$max   int  [最大排名]
+
+return int  返回被移除的成员数量
+#
+
+
+- ### $redis::zscore($set, $member);
+### 返回有序集中，成员的分数值。
+
+参数说明：
+
+$set  string  [集合名称]
+
+$members  string  [成员]
+
+return float|bool   返回分数值(浮点型)，如果成员不存在返回false
+#
+
+
+- ### 
+
+
 
 
 
