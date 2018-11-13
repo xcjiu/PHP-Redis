@@ -1,11 +1,11 @@
 {
   
-  "name": "xcjiu/php-redis",
-  "type": "php-redis",
+  "name": "redis",
+  "type": "library",
   "description": "application Redis extension for PHP class",
   "require": {
       "php": ">=5.4.0",
-      "xcjiu/php-redis": "dev-master"
+      "xcjiu/php-redis": "master"
   },
    "authors": [
         {
@@ -14,7 +14,7 @@
         }
     ], 
    "autoload": {
-        "psr-4": {"Redis\\": "Redis"}
+        "psr-4": {"Redis\\": "redis"}
     },
   "license": "Apache-2.0"
 
