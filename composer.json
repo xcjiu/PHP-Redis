@@ -1,6 +1,6 @@
 {
   
-  "name": "phpredis",
+  "name": "xcjiu/redis",
   "type": "library",
   "description": "application Redis extension for PHP class",
   "require": {
