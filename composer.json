@@ -1,6 +1,8 @@
 {
   
   "name": "xcjiu/php-redis",
+  "type": "php-redis",
+  "description": "application Redis extension for PHP",
   "require": {
       "php": ">=5.4.0",
       "xcjiu/php-redis": "dev-master"
@@ -10,6 +12,7 @@
             "name": "xcjiu",
             "email": "3483552276@qq.com"
         }
-    ]
+    ],
+  "license": "Apache-2.0"
 
 }
