@@ -1,8 +1,6 @@
 {
-  {
-    "require": {
-        "php": ">=5.4.0",
-        "xcjiu/PHP-Redis": "1.0.*"
-    }
+  "require": {
+      "php": ">=5.4.0",
+      "xcjiu/PHP-Redis": "1.0.*"
   }
 }
