@@ -12,7 +12,10 @@
             "name": "xcjiu",
             "email": "3483552276@qq.com"
         }
-    ],
+    ], 
+   "autoload": {
+        "psr-4": {"Redis\\": "Redis"}
+    },
   "license": "Apache-2.0"
 
 }
