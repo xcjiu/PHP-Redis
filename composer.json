@@ -2,7 +2,7 @@
   
   "name": "xcjiu/php-redis",
   "type": "php-redis",
-  "description": "application Redis extension for PHP",
+  "description": "application Redis extension for PHP class",
   "require": {
       "php": ">=5.4.0",
       "xcjiu/php-redis": "dev-master"
