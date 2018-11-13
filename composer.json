@@ -5,7 +5,7 @@
   "description": "application Redis extension for PHP class",
   "require": {
       "php": ">=5.4.0",
-      "xcjiu/php-redis": "master"
+      "xcjiu/php-redis": "dev-master"
   },
    "authors": [
         {
