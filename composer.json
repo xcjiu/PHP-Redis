@@ -1,10 +1,10 @@
 {
   
-  "name": "xcjiu/PHP-Redis",
+  "name": "xcjiu/php-redis",
   "version": "1.0.0",
   "require": {
       "php": ">=5.4.0",
-      "xcjiu/PHP-Redis": "dev-master"
+      "xcjiu/php-redis": "dev-master"
   },
    "authors": [
         {
