@@ -1,11 +1,10 @@
 {
   
-  "name": "redis",
+  "name": "phpredis",
   "type": "library",
   "description": "application Redis extension for PHP class",
   "require": {
-      "php": ">=5.4.0",
-      "xcjiu/php-redis": "dev-master"
+      "php": ">=5.4.0"
   },
    "authors": [
         {
