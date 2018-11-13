@@ -1,6 +1,16 @@
 {
+  
+  "name": "xcjiu/PHP-Redis",
+  "version": "1.0.0",
   "require": {
       "php": ">=5.4.0",
-      "xcjiu/PHP-Redis": "1.0.*"
-  }
+      "xcjiu/PHP-Redis": "dev-master"
+  },
+   "authors": [
+        {
+            "name": "xcjiu",
+            "email": "3483552276@qq.com"
+        }
+    ]
+
 }
