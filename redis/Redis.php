@@ -37,6 +37,24 @@ class Redis
             self::$redis->select(self::$db); //选择缓存库
         }
     }
+    
+    //构造函数可能不起作用，则用这个初始化类 Redis::_initialize($config=[])
+    public static function _initialize($config=[])
+    {
+        if($config && is_array($config)){
+            self::config($config);
+        }
+        if(self::$redis==null){
+            self::$redis = new RedisBase();
+        }
+        self::$redis->connect(self::$host,self::$port,self::$timeout) or die('Redis 连接失败！');
+        if(!empty(self::$password)){
+            self::$redis->auth(self::$password); //如果有设置密码，则需要连接密码
+        }
+        if((int)self::$db){
+            self::$redis->select(self::$db); //选择缓存库
+        }
+    }
 
     /**
      * 加载配置参数
